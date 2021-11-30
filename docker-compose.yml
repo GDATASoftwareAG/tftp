@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  tftp:
+    build:
+      context: ./
+    volumes:
+      - /var/lib/tftpboot:/var/lib/tftpboot
+    ports:
+      - "69:69/udp"

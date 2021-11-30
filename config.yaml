@@ -1,0 +1,10 @@
+fsHandlerBaseDir: /var/lib/tftpboot
+tftp:
+  ip: "0.0.0.0"
+  port: 69
+  retransmissions: 3
+  maxParallelConnections: 10
+  metrics:
+    enabled: true
+    route: "/metrics"
+    port: 9100

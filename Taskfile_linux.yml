@@ -1,0 +1,11 @@
+version: '3'
+
+vars:
+    OUT_DIR: ./out
+
+tasks:
+    clean:
+        cmds:
+            - rm -rf {{ .OUT_DIR }} ./dist/
+            - find . -type f \( -name "mock_*.go" \) -exec rm -f {} \;
+        silent: true

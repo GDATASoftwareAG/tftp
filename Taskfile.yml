@@ -1,0 +1,106 @@
+version: "3"
+
+vars:
+    BRANCH:
+        sh: echo "${GIT_BRANCH:-`git branch --show-current`}"
+    BUILD_NUMBER:
+        sh: echo "${BUILD_NUMBER:-0}"
+    TEST_TIMEOUT: 5m
+
+env:
+    CGO_ENABLED: 0
+
+includes:
+    os: Taskfile_{{ OS }}.yml
+
+tasks:
+    bootstrap-ci:
+      desc: Install required go tools and sync dependencies
+      cmds:
+          - go install github.com/golang/mock/mockgen@v1.6.0
+          - task: mockgen
+          - go mod tidy
+
+    bootstrap:
+      desc: Install required go tools and sync dependencies
+      cmds:
+          - go install github.com/golang/mock/mockgen@latest
+          - go install github.com/goreleaser/goreleaser@latest
+          - go install github.com/jstemmer/go-junit-report@latest
+          - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.43.0
+          - task: mockgen
+          - go mod tidy
+
+    clean:
+      desc: Clean generated files
+      cmds:
+          - task: os:clean
+
+    format:
+        desc: Format the code
+        cmds:
+            - go fmt ./...
+
+    lint:
+      desc: lint Go code
+      deps:
+        - mockgen
+      sources:
+        - ./**/*.go
+        - .golangci.yml
+      cmds:
+        - golangci-lint run --out-format checkstyle ./... > ./out/golangci-report.xml
+
+    update-deps:
+        desc: Update Go module dependencies
+        cmds:
+            - go mod tidy
+            - go get -u
+
+    mockgen:
+        desc: All //go:generate directives
+        sources:
+            - ./internal/**/*.go
+            - ./pkg/**/*.go
+        generates:
+            - ./internal/**/mock_*.go
+            - ./pkg/**/mock_*.go
+        cmds:
+            - go generate ./pkg/... ./internal/...
+
+    unit-tests:
+        desc: Run all unit tests
+        cmds:
+            - cmd: go test -v -timeout {{ .TEST_TIMEOUT }} ./...
+
+    release:
+        desc: Create a release - requires a tag for the current commit
+        deps:
+            - format
+            - mockgen
+        cmds:
+            - goreleaser release --rm-dist
+
+    release-snapshot:
+        desc: Create a snapshot release. Intended for local use.
+        deps:
+            - format
+            - mockgen
+        env:
+            BUILD_NUMBER: "{{ .BUILD_NUMBER }}"
+        cmds:
+            - goreleaser release --rm-dist --snapshot
+
+    cli-cover-report:
+        desc: Create a CLI coverage report of all packages and an overall value
+        sources:
+            - "{{ .OUT_DIR }}/coverage/cov.out"
+        cmds:
+            - go tool cover -func={{ .OUT_DIR }}/coverage/cov.out
+
+    html-cover-report:
+        desc: Create an HTML coverage report of all packages and an overall value
+        sources:
+            - "{{ .OUT_DIR }}/coverage/cov_filtered.out"
+        cmds:
+            - go tool cover -html={{ .OUT_DIR }}/coverage/cov.out -o {{ .OUT_DIR }}/coverage/coverage.html

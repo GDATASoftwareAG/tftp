@@ -1,0 +1,23 @@
+###############
+# Directories #
+###############
+
+.git/
+.vscode/
+.idea/
+out/
+dist/
+
+#########
+# Files #
+#########
+
+.dockerignore
+.coverage.html
+.goreleaser.yml
+.gitignore
+go.*
+Dockerfile
+coverage.out
+README.md
+Makefile

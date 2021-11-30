@@ -1,0 +1,16 @@
+###############
+# Directories #
+###############
+
+out/
+dist/
+.task/
+
+#########
+# Files #
+#########
+
+.coverage.html
+coverage.out
+
+**/mock_*.go

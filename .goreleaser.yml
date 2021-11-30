@@ -1,0 +1,28 @@
+project_name: tftp
+builds:
+  - id: tftp
+    dir: .
+    main: ./cmd/
+    binary: tftp
+    flags:
+      - -v
+      - -trimpath
+    ldflags:
+      - -w -s
+      - -X github.com/gdatasoftwareag/tftp/pkg/tftp.GitTag={{ .Tag }}
+      - -X github.com/gdatasoftwareag/tftp/pkg/tftp.GitCommit={{ .ShortCommit }}
+      - -X github.com/gdatasoftwareag/tftp/pkg/tftp.BuildTime={{ .Date }}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+release:
+  prerelease: auto
