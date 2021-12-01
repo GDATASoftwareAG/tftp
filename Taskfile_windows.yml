@@ -4,9 +4,9 @@ vars:
     OUT_DIR: .\out
 
 tasks:
-    clean:
-        cmds:
-            - cmd: powershell 'Remove-Item -Force -Recurse -ErrorAction Ignore -Path {{ .OUT_DIR }}, .\dist'
-              ignore_error: true
-            - powershell 'Get-Childitem -Recurse -Include "mock_*.go" -File . | %{ Remove-Item -Force $_.FullName }'
-        silent: true
+  clean:
+    cmds:
+      - cmd: powershell 'Remove-Item -Force -Recurse -ErrorAction Ignore -Path {{ .OUT_DIR }}, .\dist'
+        ignore_error: true
+      - powershell 'Get-Childitem -Recurse -Include "mock_*.go" -File . | %{ Remove-Item -Force $_.FullName }'
+    silent: true
