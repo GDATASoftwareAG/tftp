@@ -40,3 +40,7 @@ TFTP_TFTP_PORT=1234
 TFTP_METRICS_ENABLE=false
 ```
 
+## Extensions
+The TFTP Server ([RFC1350](https://datatracker.ietf.org/doc/html/rfc1350/)) supports the following extensions ([RFC1782](https://datatracker.ietf.org/doc/html/rfc1782)):
+- Transfer size option ([RFC2349](https://datatracker.ietf.org/doc/html/rfc2349))
+- Blocksize option ([RFC2348](https://datatracker.ietf.org/doc/html/rfc2348))
