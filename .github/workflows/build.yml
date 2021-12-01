@@ -28,9 +28,9 @@ jobs:
       run: go generate ./pkg/... ./internal/...
     - name: Run Unit tests
       run: go test -race -covermode atomic -coverprofile=covprofile ./...
-    - name: Install goveralls
-      run: go install github.com/mattn/goveralls@latest
-    - name: Send coverage
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: goveralls -coverprofile=covprofile -service=github
+    - name: Run codacy-coverage-reporter
+      uses: rageagainsthepc/codacy-coverage-reporter-action@60403abf58414d61b39b1b840726baaf4650cc71
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: covprofile
+        parser: go
