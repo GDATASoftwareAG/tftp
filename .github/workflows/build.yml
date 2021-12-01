@@ -26,5 +26,11 @@ jobs:
       run: go install github.com/golang/mock/mockgen@latest
     - name: Generate mocks
       run: go generate ./pkg/... ./internal/...
-    - name: Test
-      run: task unit-tests
+    - name: Run Unit tests
+      run: go test -race -covermode atomic -coverprofile=covprofile ./...
+    - name: Install goveralls
+      run: go install github.com/mattn/goveralls@latest
+    - name: Send coverage
+      env:
+        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: goveralls -coverprofile=covprofile -service=github
