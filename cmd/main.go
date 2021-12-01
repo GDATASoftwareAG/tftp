@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gdatasoftwareag/tftp/internal/logging"
+	"github.com/gdatasoftwareag/tftp/pkg/logging"
 	"github.com/gdatasoftwareag/tftp/pkg/tftp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

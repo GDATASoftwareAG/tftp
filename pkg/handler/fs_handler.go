@@ -4,7 +4,7 @@ import (
 	"io"
 	"io/fs"
 
-	"github.com/gdatasoftwareag/tftp/internal/logging"
+	"github.com/gdatasoftwareag/tftp/pkg/logging"
 	"github.com/gdatasoftwareag/tftp/pkg/tftp"
 )
 

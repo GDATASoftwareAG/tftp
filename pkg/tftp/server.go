@@ -12,7 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/multierr"
 
-	"github.com/gdatasoftwareag/tftp/internal/logging"
+	"github.com/gdatasoftwareag/tftp/pkg/logging"
 	"go.uber.org/zap"
 )
 

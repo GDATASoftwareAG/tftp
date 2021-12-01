@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gdatasoftwareag/tftp/internal/logging"
+	"github.com/gdatasoftwareag/tftp/pkg/logging"
 	"go.uber.org/zap"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
