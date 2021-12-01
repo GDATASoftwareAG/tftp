@@ -1,8 +1,8 @@
 # A Cross-Platform TFTP Server with Configurable Request Handlers and `fs.FS` support
 
 [![Build Status](https://github.com/GDATASoftwareAG/tftp/workflows/build/badge.svg?branch=main)](https://github.com/GDATASoftwareAG/tftp/actions?query=workflow%3Abuild)
-[![Coverage Status](https://coveralls.io/repos/github/GDATASoftwareAG/tftp/badge.svg?branch=main)](https://coveralls.io/github/GDATASoftwareAG/tftp?branch=main)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gdatasoftwareag/tftp)](https://goreportcard.com/report/github.com/gdatasoftwareag/tftp)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa9824c07d9f4be1a28b3717b6a2d01d)](https://www.codacy.com/gh/GDATASoftwareAG/tftp/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GDATASoftwareAG/tftp&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/fa9824c07d9f4be1a28b3717b6a2d01d)](https://www.codacy.com/gh/GDATASoftwareAG/tftp/dashboard?utm_source=github.com&utm_medium=referral&utm_content=GDATASoftwareAG/tftp&utm_campaign=Badge_Coverage)
 
 The TFTP Server is highly flexible for all platforms due to the Go `fs.FS` package.
 It is currently used in production to install various servers via [PXE](https://en.wikipedia.org/wiki/Preboot_Execution_Environment).
