@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"io"
 	"io/fs"
 
@@ -24,7 +25,7 @@ func (f fsHandler) Matches(_ string) bool {
 	return true
 }
 
-func (f fsHandler) Reader(filePath string) (io.ReadCloser, int64, error) {
+func (f fsHandler) Reader(_ context.Context, filePath string) (io.ReadCloser, int64, error) {
 	file, err := f.fileSystem.Open(filePath)
 	if err != nil {
 		return nil, 0, err

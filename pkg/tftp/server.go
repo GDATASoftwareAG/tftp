@@ -160,16 +160,19 @@ func (s *server) rrqWorker(ctx context.Context) {
 			if !more {
 				return
 			}
-			if err := s.sendFile(ctx, request); err != nil {
+			fileTransferCtx, cancel := context.WithTimeout(ctx, s.cfg.FileTransferTimeout)
+			err := s.sendFile(fileTransferCtx, request)
+			cancel()
+			if err != nil {
 				s.logger.Error("Failed to send file",
 					zap.Any("clientAddr", request.ClientAddress),
 					zap.String("file", request.Path),
 					zap.Error(err))
 			}
-
 		}
 	}
 }
+
 func (s *server) sendFile(ctx context.Context, request *Request) error {
 	s.logger.Info("Sending file...", zap.Any("clientAddr", request.ClientAddress), zap.String("File", request.Path))
 	sendFileTimer := prometheus.NewTimer(requestLatencyHistogram)

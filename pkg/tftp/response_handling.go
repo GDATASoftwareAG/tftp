@@ -1,18 +1,19 @@
 package tftp
 
 import (
+	"context"
 	"io"
 	"os"
 )
 
 type Handler interface {
 	Matches(file string) bool
-	Reader(file string) (io.ReadCloser, int64, error)
+	Reader(ctx context.Context, file string) (io.ReadCloser, int64, error)
 }
 
 type ResponseHandling interface {
 	RegisterHandler(handler Handler)
-	OpenFile(file string) (io.ReadCloser, int64, error)
+	OpenFile(ctx context.Context, file string) (io.ReadCloser, int64, error)
 }
 
 type responseHandling struct {
@@ -27,7 +28,7 @@ func (f *responseHandling) RegisterHandler(handler Handler) {
 	f.handlers = append(f.handlers, handler)
 }
 
-func (f *responseHandling) OpenFile(file string) (io.ReadCloser, int64, error) {
+func (f *responseHandling) OpenFile(ctx context.Context, file string) (io.ReadCloser, int64, error) {
 	var handler Handler
 	for idx := range f.handlers {
 		if f.handlers[idx].Matches(file) {
@@ -40,7 +41,7 @@ func (f *responseHandling) OpenFile(file string) (io.ReadCloser, int64, error) {
 		return nil, 0, FileErrors.ErrNoHandler
 	}
 
-	reader, size, err := handler.Reader(file)
+	reader, size, err := handler.Reader(ctx, file)
 	if err != nil {
 		return nil, 0, checkError(err)
 	}

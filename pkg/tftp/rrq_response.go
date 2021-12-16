@@ -66,7 +66,7 @@ type rrqResponse struct {
 func (r *rrqResponse) SendFile(ctx context.Context) error {
 	r.logger.Info("Trying to send file to client",
 		zap.String("File", r.request.Path))
-	reader, size, err := r.responseHandling.OpenFile(r.request.Path)
+	reader, size, err := r.responseHandling.OpenFile(ctx, r.request.Path)
 	r.transfersize = size
 	if err != nil {
 		r.handleSendFileError(err)

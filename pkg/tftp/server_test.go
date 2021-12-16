@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/gdatasoftwareag/tftp/pkg/handler"
 	"github.com/gdatasoftwareag/tftp/pkg/logging"
@@ -234,6 +235,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 				Port:                   63,
 				Retransmissions:        3,
 				MaxParallelConnections: 10,
+				FileTransferTimeout:    10 * time.Second,
 			}
 
 			flowControl := tt.fields.tftpFlowControlFunc(ctrl)

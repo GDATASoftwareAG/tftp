@@ -2,6 +2,7 @@ package tftp_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -98,11 +99,10 @@ func Test_responseHandling_OpenFile(t *testing.T) {
 			responseHandling := tt.createResponseHandlingFunc()
 
 			for _, file := range tt.files {
-				if err := tt.outMatcherFunc(responseHandling.OpenFile(file)); err != nil {
+				if err := tt.outMatcherFunc(responseHandling.OpenFile(context.Background(), file)); err != nil {
 					t.Errorf(err.Error())
 				}
 			}
-
 		})
 	}
 }
