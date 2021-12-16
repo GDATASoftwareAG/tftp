@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/gdatasoftwareag/tftp/pkg/tftp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/tftp"
 	"github.com/spf13/cobra"
 )
 

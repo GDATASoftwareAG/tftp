@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	udp "github.com/gdatasoftwareag/tftp/pkg/udp"
+	udp "github.com/gdatasoftwareag/tftp/v2/pkg/udp"
 	gomock "github.com/golang/mock/gomock"
 )
 

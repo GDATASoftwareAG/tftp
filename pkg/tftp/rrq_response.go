@@ -10,11 +10,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gdatasoftwareag/tftp/pkg/udp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/udp"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/gdatasoftwareag/tftp/pkg/logging"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/logging"
 	"go.uber.org/zap"
 )
 
@@ -66,7 +66,7 @@ type rrqResponse struct {
 func (r *rrqResponse) SendFile(ctx context.Context) error {
 	r.logger.Info("Trying to send file to client",
 		zap.String("File", r.request.Path))
-	reader, size, err := r.responseHandling.OpenFile(r.request.Path)
+	reader, size, err := r.responseHandling.OpenFile(ctx, r.request.Path)
 	r.transfersize = size
 	if err != nil {
 		r.handleSendFileError(err)

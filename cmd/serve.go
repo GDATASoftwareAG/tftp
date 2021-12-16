@@ -5,10 +5,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gdatasoftwareag/tftp/pkg/handler"
-	"github.com/gdatasoftwareag/tftp/pkg/secfs"
-	"github.com/gdatasoftwareag/tftp/pkg/tftp"
-	"github.com/gdatasoftwareag/tftp/pkg/udp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/handler"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/secfs"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/tftp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/udp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

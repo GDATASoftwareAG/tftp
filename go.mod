@@ -1,4 +1,4 @@
-module github.com/gdatasoftwareag/tftp
+module github.com/gdatasoftwareag/tftp/v2
 
 go 1.17
 

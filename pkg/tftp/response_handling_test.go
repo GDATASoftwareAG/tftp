@@ -2,15 +2,16 @@ package tftp_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"testing"
 	"testing/fstest"
 
-	"github.com/gdatasoftwareag/tftp/pkg/handler"
-	"github.com/gdatasoftwareag/tftp/pkg/logging"
-	"github.com/gdatasoftwareag/tftp/pkg/tftp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/handler"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/logging"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/tftp"
 )
 
 func Test_responseHandling_OpenFile(t *testing.T) {
@@ -98,11 +99,10 @@ func Test_responseHandling_OpenFile(t *testing.T) {
 			responseHandling := tt.createResponseHandlingFunc()
 
 			for _, file := range tt.files {
-				if err := tt.outMatcherFunc(responseHandling.OpenFile(file)); err != nil {
+				if err := tt.outMatcherFunc(responseHandling.OpenFile(context.Background(), file)); err != nil {
 					t.Errorf(err.Error())
 				}
 			}
-
 		})
 	}
 }

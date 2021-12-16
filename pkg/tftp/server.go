@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gdatasoftwareag/tftp/internal/metrics"
-	"github.com/gdatasoftwareag/tftp/pkg/udp"
+	"github.com/gdatasoftwareag/tftp/v2/internal/metrics"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/udp"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/multierr"
 
-	"github.com/gdatasoftwareag/tftp/pkg/logging"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/logging"
 	"go.uber.org/zap"
 )
 
@@ -160,16 +160,19 @@ func (s *server) rrqWorker(ctx context.Context) {
 			if !more {
 				return
 			}
-			if err := s.sendFile(ctx, request); err != nil {
+			fileTransferCtx, cancel := context.WithTimeout(ctx, s.cfg.FileTransferTimeout)
+			err := s.sendFile(fileTransferCtx, request)
+			cancel()
+			if err != nil {
 				s.logger.Error("Failed to send file",
 					zap.Any("clientAddr", request.ClientAddress),
 					zap.String("file", request.Path),
 					zap.Error(err))
 			}
-
 		}
 	}
 }
+
 func (s *server) sendFile(ctx context.Context, request *Request) error {
 	s.logger.Info("Sending file...", zap.Any("clientAddr", request.ClientAddress), zap.String("File", request.Path))
 	sendFileTimer := prometheus.NewTimer(requestLatencyHistogram)

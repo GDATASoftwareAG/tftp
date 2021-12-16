@@ -14,13 +14,14 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/gdatasoftwareag/tftp/pkg/handler"
-	"github.com/gdatasoftwareag/tftp/pkg/logging"
-	"github.com/gdatasoftwareag/tftp/pkg/secfs"
-	"github.com/gdatasoftwareag/tftp/pkg/tftp"
-	"github.com/gdatasoftwareag/tftp/pkg/udp"
-	"github.com/gdatasoftwareag/tftp/pkg/udp/mock"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/handler"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/logging"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/secfs"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/tftp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/udp"
+	"github.com/gdatasoftwareag/tftp/v2/pkg/udp/mock"
 	"github.com/golang/mock/gomock"
 )
 
@@ -234,6 +235,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 				Port:                   63,
 				Retransmissions:        3,
 				MaxParallelConnections: 10,
+				FileTransferTimeout:    10 * time.Second,
 			}
 
 			flowControl := tt.fields.tftpFlowControlFunc(ctrl)

@@ -7,7 +7,7 @@ package mock
 import (
 	reflect "reflect"
 
-	logging "github.com/gdatasoftwareag/tftp/pkg/logging"
+	logging "github.com/gdatasoftwareag/tftp/v2/pkg/logging"
 	gomock "github.com/golang/mock/gomock"
 	zap "go.uber.org/zap"
 )
