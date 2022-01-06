@@ -29,8 +29,8 @@ jobs:
     - name: Run Unit tests
       run: go test -race -covermode atomic -coverprofile=covprofile ./...
     - name: Run codacy-coverage-reporter
-      uses: rageagainsthepc/codacy-coverage-reporter-action@force-parser
+      uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
         coverage-reports: covprofile
-        parser: go
+        force-coverage-parser: go
