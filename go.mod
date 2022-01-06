@@ -9,7 +9,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.10.1
 	go.uber.org/multierr v1.6.0
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.20.0
 )
 
 require (
