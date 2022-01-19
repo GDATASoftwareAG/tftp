@@ -181,7 +181,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 			name: "Test write timeout",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "").
+					controller := setupFileTransferConnections(ctrl, "smallFile.txt").
 						createWriteTimeout()
 
 					return controller
@@ -283,7 +283,7 @@ type TFTPFlowControl struct {
 	transmissionDone       chan struct{}
 }
 
-func createUPCConnectionWithOneIncomingRequest(ctrl *gomock.Controller, file string, requestOptions ...tftp.Option) udp.Connection {
+func createUDPConnectionWithOneIncomingRequest(ctrl *gomock.Controller, file string, requestOptions ...tftp.Option) udp.Connection {
 	listenForRRQConnection := mock.NewMockConnection(ctrl)
 	// Return valid RRQ on first read.
 	// Simulate closed connection on all following reads. Test cases only handle one incoming request.
@@ -334,7 +334,7 @@ func setupFileTransferConnections(ctrl *gomock.Controller, file string, requestO
 	mockConnector.
 		EXPECT().
 		ListenUDP("udp", gomock.Any()).
-		Return(createUPCConnectionWithOneIncomingRequest(ctrl, file, requestOptions...), nil)
+		Return(createUDPConnectionWithOneIncomingRequest(ctrl, file, requestOptions...), nil)
 
 	// Server establishes connection to incoming request
 	//    Get a local address with random high port
