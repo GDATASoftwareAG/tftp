@@ -1,9 +1,11 @@
 package secfs
 
 import (
-	securejoin "github.com/cyphar/filepath-securejoin"
 	"io/fs"
 	"os"
+	"path/filepath"
+
+	securejoin "github.com/cyphar/filepath-securejoin"
 )
 
 type fileSystem struct {
@@ -19,7 +21,7 @@ func New(rootPath string) fs.FS {
 }
 
 func (f fileSystem) Open(name string) (fs.File, error) {
-	_, err := securejoin.SecureJoin(f.rootPath, name)
+	path, err := securejoin.SecureJoin(f.rootPath, name)
 	if err != nil {
 		return nil, &os.PathError{
 			Op:   "open",
@@ -27,6 +29,13 @@ func (f fileSystem) Open(name string) (fs.File, error) {
 			Err:  err,
 		}
 	}
+	if path, err = filepath.Rel(f.rootPath, path); err != nil {
+		return nil, &os.PathError{
+			Op:   "open",
+			Path: name,
+			Err:  err,
+		}
+	}
 
-	return f.fs.Open(name)
+	return f.fs.Open(path)
 }
