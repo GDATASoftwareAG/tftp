@@ -227,7 +227,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 			}
 			dir = filepath.Join(dir, "test_files")
 
-			responseHandling := tftp.NewResponseHandling()
+			responseHandling := tftp.NewResponseHandling(testLogger)
 			responseHandling.RegisterHandler(handler.NewFSHandler(secfs.New(dir), testLogger))
 
 			config := tftp.Config{

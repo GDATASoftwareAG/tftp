@@ -28,7 +28,7 @@ func Test_responseHandling_OpenFile(t *testing.T) {
 			name:  "Ensure handlers are checked in order of registration - HealthCheckHandler first",
 			files: []string{"health"},
 			createResponseHandlingFunc: func() tftp.ResponseHandling {
-				responseHandling := tftp.NewResponseHandling()
+				responseHandling := tftp.NewResponseHandling(testLogger)
 				responseHandling.RegisterHandler(handler.NewHealthCheckHandler())
 				responseHandling.RegisterHandler(handler.NewFSHandler(fstest.MapFS{
 					"health": &fstest.MapFile{
@@ -52,7 +52,7 @@ func Test_responseHandling_OpenFile(t *testing.T) {
 			name:  "Handlers registered in wrong order - Unexpected response",
 			files: []string{"health"},
 			createResponseHandlingFunc: func() tftp.ResponseHandling {
-				responseHandling := tftp.NewResponseHandling()
+				responseHandling := tftp.NewResponseHandling(testLogger)
 				responseHandling.RegisterHandler(handler.NewFSHandler(fstest.MapFS{
 					"health": &fstest.MapFile{
 						Data: []byte("FSHandlerHealth"),
@@ -76,7 +76,7 @@ func Test_responseHandling_OpenFile(t *testing.T) {
 			name:  "No handler registered - error",
 			files: []string{"health"},
 			createResponseHandlingFunc: func() tftp.ResponseHandling {
-				responseHandling := tftp.NewResponseHandling()
+				responseHandling := tftp.NewResponseHandling(testLogger)
 				return responseHandling
 			},
 			outMatcherFunc: func(closer io.ReadCloser, size int64, err error) error {
