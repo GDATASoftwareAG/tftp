@@ -117,13 +117,16 @@ func (r *rrqResponse) sendTFTPBlocks(ctx context.Context, reader io.ReadCloser) 
 
 	currentBlock, ok := r.createTFTPBlock(reader, buffer, r.blocknum)
 
-	for ok && ctx.Err() == nil {
+	for ; ok && err == nil; err = ctx.Err() {
 		if err = r.sendTFTPBlock(currentBlock); err != nil {
 			return
 		}
 
 		r.blocknum++
 		currentBlock, ok = r.createTFTPBlock(reader, buffer, r.blocknum)
+	}
+	if err != nil {
+		return
 	}
 
 	if r.transfersize%int64(r.blocksize) == 0 {

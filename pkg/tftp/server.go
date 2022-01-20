@@ -160,9 +160,12 @@ func (s *server) rrqWorker(ctx context.Context) {
 			if !more {
 				return
 			}
-			fileTransferCtx, cancel := context.WithTimeout(ctx, s.cfg.FileTransferTimeout)
-			err := s.sendFile(fileTransferCtx, request)
-			cancel()
+			if s.cfg.FileTransferTimeout != 0 {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, s.cfg.FileTransferTimeout)
+				defer cancel()
+			}
+			err := s.sendFile(ctx, request)
 			if err != nil {
 				s.logger.Error("Failed to send file",
 					zap.Any("clientAddr", request.ClientAddress),

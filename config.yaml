@@ -4,6 +4,8 @@ tftp:
   port: 69
   retransmissions: 3
   maxParallelConnections: 10
+  # Disabled by default ("0s")
+  filetransfertimeout: "60s"
   metrics:
     enabled: true
     route: "/metrics"
