@@ -26,7 +26,7 @@ func serveTFTP(_ *cobra.Command, _ []string) (err error) {
 		zap.Any("config", cfg),
 	)
 
-	responseHandling := tftp.NewResponseHandling()
+	responseHandling := tftp.NewResponseHandling(logger)
 	responseHandling.RegisterHandler(handler.NewHealthCheckHandler())
 	responseHandling.RegisterHandler(handler.NewFSHandler(secfs.New(cfg.FSHandlerBaseDir), logger))
 

@@ -2,8 +2,12 @@ package tftp
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
+
+	"github.com/gdatasoftwareag/tftp/v2/pkg/logging"
+	"go.uber.org/zap"
 )
 
 type Handler interface {
@@ -18,10 +22,13 @@ type ResponseHandling interface {
 
 type responseHandling struct {
 	handlers []Handler
+	logger   logging.Logger
 }
 
-func NewResponseHandling() ResponseHandling {
-	return &responseHandling{}
+func NewResponseHandling(logger logging.Logger) ResponseHandling {
+	return &responseHandling{
+		logger: logger,
+	}
 }
 
 func (f *responseHandling) RegisterHandler(handler Handler) {
@@ -32,6 +39,7 @@ func (f *responseHandling) OpenFile(ctx context.Context, file string) (io.ReadCl
 	var handler Handler
 	for idx := range f.handlers {
 		if f.handlers[idx].Matches(file) {
+			f.logger.Debug("Found matching handler", zap.String("handler", fmt.Sprintf("%T", f.handlers[idx])))
 			handler = f.handlers[idx]
 			break
 		}
