@@ -44,45 +44,63 @@ func TestServer_ListenAndServe(t *testing.T) {
 		tftpFlowControlFunc func(ctrl *gomock.Controller) *TFTPFlowControl
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
+		name                     string
+		fields                   fields
+		expectedTransmittedFiles int
+		wantErr                  bool
 	}{
 		{
 			name: "Request file smaller than blocksize",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "smallFile.txt").
-						createTFTPBlocksFromBuffer(readFileToBuffer("smallFile.txt"))
+					controller := setupFileTransferConnections(ctrl, []string{"smallFile.txt"}).
+						createTFTPBlocksFromBuffer(readFileToBuffer("smallFile.txt"), 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Request file equals blocksize",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "defaultBlockSizeFile.txt").
-						createTFTPBlocksFromBuffer(readFileToBuffer("defaultBlockSizeFile.txt"))
+					controller := setupFileTransferConnections(ctrl, []string{"defaultBlockSizeFile.txt"}).
+						createTFTPBlocksFromBuffer(readFileToBuffer("defaultBlockSizeFile.txt"), 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Request file larger blocksize",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "largeFile.txt").
-						createTFTPBlocksFromBuffer(readFileToBuffer("largeFile.txt"))
+					controller := setupFileTransferConnections(ctrl, []string{"largeFile.txt"}).
+						createTFTPBlocksFromBuffer(readFileToBuffer("largeFile.txt"), 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
+		},
+		{
+			name: "Send file twice",
+			fields: fields{
+				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
+					files := []string{"smallFile.txt", "largeFile.txt"}
+					controller := setupFileTransferConnections(ctrl, files).
+						createTFTPBlocksFromFiles(files)
+
+					return controller
+				},
+			},
+			expectedTransmittedFiles: 2,
+			wantErr:                  false,
 		},
 		{
 			name: "Test OACK with different block- and transfersize",
@@ -98,14 +116,15 @@ func TestServer_ListenAndServe(t *testing.T) {
 							Name: tftp.OptionTsize,
 							Val:  "0",
 						}}
-					controller := setupFileTransferConnections(ctrl, "defaultBlockSizeFile.txt", options...).
-						createOACK(123, len(fileBuffer)).
-						createTFTPBlocksFromBuffer(fileBuffer)
+					controller := setupFileTransferConnections(ctrl, []string{"defaultBlockSizeFile.txt"}, options...).
+						createOACK(123, len(fileBuffer), 0).
+						createTFTPBlocksFromBuffer(fileBuffer, 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Test OACK with different blocksize",
@@ -121,14 +140,15 @@ func TestServer_ListenAndServe(t *testing.T) {
 							Name: tftp.OptionTsize,
 							Val:  strconv.Itoa(tftp.DefaultTransfersize),
 						}}
-					controller := setupFileTransferConnections(ctrl, "defaultBlockSizeFile.txt", options...).
-						createOACK(123, tftp.DefaultTransfersize).
-						createTFTPBlocksFromBuffer(fileBuffer)
+					controller := setupFileTransferConnections(ctrl, []string{"defaultBlockSizeFile.txt"}, options...).
+						createOACK(123, tftp.DefaultTransfersize, 0).
+						createTFTPBlocksFromBuffer(fileBuffer, 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Test OACK with different transfersize",
@@ -144,76 +164,82 @@ func TestServer_ListenAndServe(t *testing.T) {
 							Name: tftp.OptionTsize,
 							Val:  "0",
 						}}
-					controller := setupFileTransferConnections(ctrl, "defaultBlockSizeFile.txt", options...).
-						createOACK(tftp.DefaultBlocksize, len(fileBuffer)).
-						createTFTPBlocksFromBuffer(fileBuffer)
+					controller := setupFileTransferConnections(ctrl, []string{"defaultBlockSizeFile.txt"}, options...).
+						createOACK(tftp.DefaultBlocksize, len(fileBuffer), 0).
+						createTFTPBlocksFromBuffer(fileBuffer, 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Test file not found",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "not_present_file.txt").
-						createError(tftp.NotFound)
+					controller := setupFileTransferConnections(ctrl, []string{"not_present_file.txt"}).
+						createError(tftp.NotFound, 0)
 
 					return controller
 				},
 			},
-			wantErr: true,
+			expectedTransmittedFiles: 1,
+			wantErr:                  true,
 		},
 		{
 			name: "Test read timeout",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "defaultBlockSizeFile.txt").
-						createReadTimeout()
+					controller := setupFileTransferConnections(ctrl, []string{"defaultBlockSizeFile.txt"}).
+						createReadTimeout(0)
 
 					return controller
 				},
 			},
-			wantErr: true,
+			expectedTransmittedFiles: 1,
+			wantErr:                  true,
 		},
 		{
 			name: "Test write timeout",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
-					controller := setupFileTransferConnections(ctrl, "smallFile.txt").
-						createWriteTimeout()
+					controller := setupFileTransferConnections(ctrl, []string{"smallFile.txt"}).
+						createWriteTimeout(0)
 
 					return controller
 				},
 			},
-			wantErr: true,
+			expectedTransmittedFiles: 1,
+			wantErr:                  true,
 		},
 		{
 			name: "Test retransmission of package",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
 					fileBuffer := readFileToBuffer("smallFile.txt")
-					controller := setupFileTransferConnections(ctrl, "smallFile.txt").
-						createRetransmission(fileBuffer, 1, true)
+					controller := setupFileTransferConnections(ctrl, []string{"smallFile.txt"}).
+						createRetransmission(fileBuffer, 1, true, 0)
 
 					return controller
 				},
 			},
-			wantErr: false,
+			expectedTransmittedFiles: 1,
+			wantErr:                  false,
 		},
 		{
 			name: "Test retransmission failure of package",
 			fields: fields{
 				tftpFlowControlFunc: func(ctrl *gomock.Controller) *TFTPFlowControl {
 					fileBuffer := readFileToBuffer("smallFile.txt")
-					controller := setupFileTransferConnections(ctrl, "smallFile.txt").
-						createRetransmission(fileBuffer, 3, false)
+					controller := setupFileTransferConnections(ctrl, []string{"smallFile.txt"}).
+						createRetransmission(fileBuffer, 3, false, 0)
 
 					return controller
 				},
 			},
-			wantErr: true,
+			expectedTransmittedFiles: 1,
+			wantErr:                  true,
 		},
 	}
 	for _, tt := range tests {
@@ -234,7 +260,7 @@ func TestServer_ListenAndServe(t *testing.T) {
 				IP:                     "0.0.0.0",
 				Port:                   63,
 				Retransmissions:        3,
-				MaxParallelConnections: 10,
+				MaxParallelConnections: 1,
 				FileTransferTimeout:    10 * time.Second,
 			}
 
@@ -253,7 +279,12 @@ func TestServer_ListenAndServe(t *testing.T) {
 				_ = server.ListenAndServe(ctx)
 				close(doneChan)
 			}()
-			<-flowControl.transmissionDone
+			transmissionCounter := 0
+			for transmissionCounter < tt.expectedTransmittedFiles {
+				<-flowControl.transmissionCount
+				transmissionCounter++
+			}
+			close(flowControl.transmissionCount)
 			cancel()
 			<-doneChan
 
@@ -276,42 +307,38 @@ func readFileToBuffer(path string) []byte {
 }
 
 type TFTPFlowControl struct {
-	connector              *mock.MockConnector
-	fileTransferConnection *mock.MockConnection
-	blockSize              int
-	blockNum               uint16
-	transmissionDone       chan struct{}
+	connector               *mock.MockConnector
+	fileTransferConnections []*mock.MockConnection
+	blockSize               int
+	blockNum                uint16
+	transmissionCount       chan struct{}
 }
 
-func createUDPConnectionWithOneIncomingRequest(ctrl *gomock.Controller, file string, requestOptions ...tftp.Option) udp.Connection {
+func createUDPConnectionWithIncomingRequests(ctrl *gomock.Controller, files []string, requestOptions ...tftp.Option) udp.Connection {
 	listenForRRQConnection := mock.NewMockConnection(ctrl)
-	// Return valid RRQ on first read.
-	// Simulate closed connection on all following reads. Test cases only handle one incoming request.
-	gomock.InOrder(
-		listenForRRQConnection.
-			EXPECT().
-			ReadFromUDP(gomock.Any()).
-			DoAndReturn(func(b []byte) (_ int, _ *net.UDPAddr, _ error) {
-				rrqData := tftp.CreateRRQTestData(file, tftp.ModeOctet, requestOptions)
-				copy(b, rrqData)
-				return len(rrqData), clientAddress, nil
-			}),
-		listenForRRQConnection.
-			EXPECT().
-			ReadFromUDP(gomock.Any()).
-			DoAndReturn(func(b []byte) (_ int, _ *net.UDPAddr, _ error) {
+
+	listenForRRQConnection.
+		EXPECT().
+		ReadFromUDP(gomock.Any()).
+		DoAndReturn(func(b []byte) (_ int, _ *net.UDPAddr, _ error) {
+			if len(files) == 0 {
 				return 0, clientAddress, io.EOF
-			}).AnyTimes(),
-	)
+			}
+			file := files[0]
+			files = files[1:]
+			rrqData := tftp.CreateRRQTestData(file, tftp.ModeOctet, requestOptions)
+			copy(b, rrqData)
+			return len(rrqData), clientAddress, nil
+		}).AnyTimes()
 	listenForRRQConnection.EXPECT().Close()
 
 	return listenForRRQConnection
 }
 
-func createFileTransferConnection(ctrl *gomock.Controller, transmissionDoneChan chan struct{}) *mock.MockConnection {
+func createFileTransferConnection(ctrl *gomock.Controller, transmissionCountChan chan struct{}) *mock.MockConnection {
 	mockConnection := mock.NewMockConnection(ctrl)
 	mockConnection.EXPECT().Close().Do(func() error {
-		close(transmissionDoneChan)
+		transmissionCountChan <- struct{}{}
 		return nil
 	})
 
@@ -329,37 +356,53 @@ func createFileTransferConnection(ctrl *gomock.Controller, transmissionDoneChan 
 	return mockConnection
 }
 
-func setupFileTransferConnections(ctrl *gomock.Controller, file string, requestOptions ...tftp.Option) *TFTPFlowControl {
+func setupFileTransferConnections(ctrl *gomock.Controller, files []string, requestOptions ...tftp.Option) *TFTPFlowControl {
 	mockConnector := mock.NewMockConnector(ctrl)
 	mockConnector.
 		EXPECT().
 		ListenUDP("udp", gomock.Any()).
-		Return(createUDPConnectionWithOneIncomingRequest(ctrl, file, requestOptions...), nil)
+		Return(createUDPConnectionWithIncomingRequests(ctrl, files, requestOptions...), nil)
 
 	// Server establishes connection to incoming request
 	//    Get a local address with random high port
 	mockConnector.EXPECT().
 		ResolveUDPAddr("udp", listenAddress.IP.String()+":0").
-		Return(resolvedListenAddress, nil)
+		Return(resolvedListenAddress, nil).Times(len(files))
 
-	//    Establish connection for file transfer
-	transmissionDoneChan := make(chan struct{})
-	fileTransferConnection := createFileTransferConnection(ctrl, transmissionDoneChan)
+	transmissionCountChan := make(chan struct{})
+	fileTransferConnections := make([]*mock.MockConnection, 0, len(files))
+	for connectionIdx := 0; connectionIdx < len(files); connectionIdx++ {
+		fileTransferConnections = append(fileTransferConnections, createFileTransferConnection(ctrl, transmissionCountChan))
+	}
+
 	mockConnector.
 		EXPECT().
 		DialUDP("udp", resolvedListenAddress, clientAddress).
-		Return(fileTransferConnection, nil)
+		DoAndReturn(func(network string, laddr, raddr *net.UDPAddr) (udp.Connection, error) {
+			fileTransferConnection := fileTransferConnections[0]
+			fileTransferConnections = fileTransferConnections[1:]
+			return fileTransferConnection, nil
+		}).Times(len(files))
+	// Establish connection for file transfer
 
 	return &TFTPFlowControl{
-		connector:              mockConnector,
-		fileTransferConnection: fileTransferConnection,
-		blockSize:              tftp.DefaultBlocksize,
-		blockNum:               1,
-		transmissionDone:       transmissionDoneChan,
+		connector:               mockConnector,
+		fileTransferConnections: fileTransferConnections,
+		blockSize:               tftp.DefaultBlocksize,
+		blockNum:                1,
+		transmissionCount:       transmissionCountChan,
 	}
 }
 
-func (t *TFTPFlowControl) createTFTPBlocksFromBuffer(buffer []byte) *TFTPFlowControl {
+func (t *TFTPFlowControl) createTFTPBlocksFromFiles(files []string) *TFTPFlowControl {
+	for idx, file := range files {
+		t.createTFTPBlocksFromBuffer(readFileToBuffer(file), idx)
+	}
+	return t
+}
+
+func (t *TFTPFlowControl) createTFTPBlocksFromBuffer(buffer []byte, connectionIdx int) *TFTPFlowControl {
+	t.blockNum = 1
 	end := int(math.Ceil(float64(len(buffer)) / float64(t.blockSize)))
 
 	for idx := 0; idx < end; idx++ {
@@ -373,8 +416,8 @@ func (t *TFTPFlowControl) createTFTPBlocksFromBuffer(buffer []byte) *TFTPFlowCon
 		// Therefore the block number in the lambda function corresponds to the last value of the block number after the execution of the for-loop.
 		ackNum := t.blockNum + uint16(idx)
 		gomock.InOrder(
-			t.fileTransferConnection.EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
-			t.fileTransferConnection.EXPECT().
+			t.fileTransferConnections[connectionIdx].EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
+			t.fileTransferConnections[connectionIdx].EXPECT().
 				ReadFromUDP(gomock.Any()).
 				Do(func(b []byte) {
 					binary.BigEndian.PutUint16(b, tftp.ACK.Value())
@@ -388,8 +431,8 @@ func (t *TFTPFlowControl) createTFTPBlocksFromBuffer(buffer []byte) *TFTPFlowCon
 		tftpBlock := createTFTPBlock(make([]byte, 0), t.blockNum)
 		ackNum := t.blockNum
 		gomock.InOrder(
-			t.fileTransferConnection.EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
-			t.fileTransferConnection.EXPECT().
+			t.fileTransferConnections[connectionIdx].EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
+			t.fileTransferConnections[connectionIdx].EXPECT().
 				ReadFromUDP(gomock.Any()).
 				Do(func(b []byte) {
 					binary.BigEndian.PutUint16(b, tftp.ACK.Value())
@@ -403,13 +446,13 @@ func (t *TFTPFlowControl) createTFTPBlocksFromBuffer(buffer []byte) *TFTPFlowCon
 	return t
 }
 
-func (t *TFTPFlowControl) createRetransmission(buffer []byte, times int, success bool) *TFTPFlowControl {
+func (t *TFTPFlowControl) createRetransmission(buffer []byte, times int, success bool, connectionIdx int) *TFTPFlowControl {
 	tftpBlock := createTFTPBlock(buffer, t.blockNum)
 
 	for try := 0; try < times; try++ {
 		gomock.InOrder(
-			t.fileTransferConnection.EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
-			t.fileTransferConnection.EXPECT().
+			t.fileTransferConnections[connectionIdx].EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
+			t.fileTransferConnections[connectionIdx].EXPECT().
 				ReadFromUDP(gomock.Any()).
 				Do(func(b []byte) {
 					binary.BigEndian.PutUint16(b, tftp.ACK.Value())
@@ -421,8 +464,8 @@ func (t *TFTPFlowControl) createRetransmission(buffer []byte, times int, success
 
 	if success {
 		gomock.InOrder(
-			t.fileTransferConnection.EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
-			t.fileTransferConnection.EXPECT().
+			t.fileTransferConnections[connectionIdx].EXPECT().Write(tftpBlock).Return(len(tftpBlock), nil).Times(1),
+			t.fileTransferConnections[connectionIdx].EXPECT().
 				ReadFromUDP(gomock.Any()).
 				Do(func(b []byte) {
 					binary.BigEndian.PutUint16(b, tftp.ACK.Value())
@@ -433,7 +476,7 @@ func (t *TFTPFlowControl) createRetransmission(buffer []byte, times int, success
 	return t
 }
 
-func (t *TFTPFlowControl) createOACK(blockSize int, fileSize int) *TFTPFlowControl {
+func (t *TFTPFlowControl) createOACK(blockSize int, fileSize int, connectionIdx int) *TFTPFlowControl {
 	t.blockSize = blockSize
 
 	oackbuffer := make([]byte, 2)
@@ -451,8 +494,8 @@ func (t *TFTPFlowControl) createOACK(blockSize int, fileSize int) *TFTPFlowContr
 		oackbuffer = append(oackbuffer, []byte(strconv.Itoa(fileSize))...)
 		oackbuffer = append(oackbuffer, 0)
 	}
-	t.fileTransferConnection.EXPECT().Write(oackbuffer).Return(len(oackbuffer), nil).Times(1)
-	t.fileTransferConnection.EXPECT().ReadFromUDP(gomock.Any()).Do(func(b []byte) {
+	t.fileTransferConnections[connectionIdx].EXPECT().Write(oackbuffer).Return(len(oackbuffer), nil).Times(1)
+	t.fileTransferConnections[connectionIdx].EXPECT().ReadFromUDP(gomock.Any()).Do(func(b []byte) {
 		binary.BigEndian.PutUint16(b, tftp.ACK.Value())
 		binary.BigEndian.PutUint16(b[tftp.OpcodeLength:], uint16(0))
 	}).Times(1)
@@ -460,20 +503,20 @@ func (t *TFTPFlowControl) createOACK(blockSize int, fileSize int) *TFTPFlowContr
 	return t
 }
 
-func (t *TFTPFlowControl) createError(errorCode tftp.ErrorCode) *TFTPFlowControl {
-	t.fileTransferConnection.EXPECT().Write(matchError(errorCode)).DoAndReturn(func(b []byte) (int, error) { return len(b), nil })
+func (t *TFTPFlowControl) createError(errorCode tftp.ErrorCode, connectionIdx int) *TFTPFlowControl {
+	t.fileTransferConnections[connectionIdx].EXPECT().Write(matchError(errorCode)).DoAndReturn(func(b []byte) (int, error) { return len(b), nil })
 	return t
 }
 
-func (t *TFTPFlowControl) createWriteTimeout() *TFTPFlowControl {
-	t.fileTransferConnection.EXPECT().Write(gomock.Any()).Return(0, errors.New("timeout")).Times(1)
-	t.fileTransferConnection.EXPECT().ReadFromUDP(gomock.Any()).Times(0)
+func (t *TFTPFlowControl) createWriteTimeout(connectionIdx int) *TFTPFlowControl {
+	t.fileTransferConnections[connectionIdx].EXPECT().Write(gomock.Any()).Return(0, errors.New("timeout")).Times(1)
+	t.fileTransferConnections[connectionIdx].EXPECT().ReadFromUDP(gomock.Any()).Times(0)
 	return t
 }
 
-func (t *TFTPFlowControl) createReadTimeout() *TFTPFlowControl {
-	t.fileTransferConnection.EXPECT().Write(gomock.Any()).DoAndReturn(func(b []byte) (int, error) { return len(b), nil })
-	t.fileTransferConnection.EXPECT().ReadFromUDP(gomock.Any()).Return(0, nil, errors.New("timeout")).Times(3)
+func (t *TFTPFlowControl) createReadTimeout(connectionIdx int) *TFTPFlowControl {
+	t.fileTransferConnections[connectionIdx].EXPECT().Write(gomock.Any()).DoAndReturn(func(b []byte) (int, error) { return len(b), nil })
+	t.fileTransferConnections[connectionIdx].EXPECT().ReadFromUDP(gomock.Any()).Return(0, nil, errors.New("timeout")).Times(3)
 	return t
 }
 
