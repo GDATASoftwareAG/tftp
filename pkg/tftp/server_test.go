@@ -515,7 +515,7 @@ func (t *TFTPFlowControl) createWriteTimeout(connectionIdx int) *TFTPFlowControl
 }
 
 func (t *TFTPFlowControl) createReadTimeout(connectionIdx int) *TFTPFlowControl {
-	t.fileTransferConnections[connectionIdx].EXPECT().Write(gomock.Any()).DoAndReturn(func(b []byte) (int, error) { return len(b), nil })
+	t.fileTransferConnections[connectionIdx].EXPECT().Write(gomock.Any()).DoAndReturn(func(b []byte) (int, error) { return len(b), nil }).Times(3)
 	t.fileTransferConnections[connectionIdx].EXPECT().ReadFromUDP(gomock.Any()).Return(0, nil, errors.New("timeout")).Times(3)
 	return t
 }
