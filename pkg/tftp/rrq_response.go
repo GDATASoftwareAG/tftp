@@ -277,17 +277,17 @@ func (r *rrqResponse) sendError(code ErrorCode, occurredError error) (err error)
 func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries int) error {
 	var err error
 	var numBytes int
-
-	_ = r.connection.SetWriteDeadline(time.Now().Add(5 * time.Second))
-	numBytes, err = r.connection.Write(buffer)
-	if err != nil {
-		return err
-	}
-
-	r.logger.Debug("Package send",
-		zap.Int("Bytes", numBytes))
-
+	
 	for try := 0; try < tries; try++ {
+		_ = r.connection.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		numBytes, err = r.connection.Write(buffer)
+		if err != nil {
+			return err
+		}
+
+		r.logger.Debug("Package send",
+			zap.Int("Bytes", numBytes))
+
 		_ = r.connection.SetReadDeadline(time.Now().Add(5 * time.Second))
 		numBytes, _, err = r.connection.ReadFromUDP(r.ack)
 		r.ackLength = numBytes
@@ -298,7 +298,8 @@ func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries
 			return nil
 		}
 		r.logger.Warn("Read timeout",
-			zap.Int("Try", try))
+			zap.Int("Try", try),
+			zap.Error(err))
 	}
 
 	return err
