@@ -285,7 +285,7 @@ func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries
 			return err
 		}
 
-		r.logger.Debug("Package send",
+		r.logger.Debug("Package sent",
 			zap.Int("Bytes", numBytes))
 
 		_ = r.connection.SetReadDeadline(time.Now().Add(5 * time.Second))
