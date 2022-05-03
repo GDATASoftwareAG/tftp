@@ -195,7 +195,7 @@ func (s *server) sendFile(ctx context.Context, request *Request) error {
 	}
 	defer connection.Close()
 
-	response := newRRQResponse(s.responseHandling, connection, request, s.cfg.Retransmissions, s.logger)
+	response := newRRQResponse(s.responseHandling, connection, request, s.cfg, s.logger)
 	if err = response.SendFile(ctx); err != nil {
 		return err
 	}
