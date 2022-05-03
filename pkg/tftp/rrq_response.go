@@ -54,7 +54,7 @@ type rrqResponse struct {
 	logger           logging.Logger
 	responseHandling ResponseHandling
 	connection       udp.Connection
-	retransmissions  int
+	config           Config
 	ack              []byte
 	ackLength        int
 	request          *Request
@@ -137,8 +137,8 @@ func (r *rrqResponse) sendTFTPBlocks(ctx context.Context, reader io.ReadCloser) 
 }
 
 func (r *rrqResponse) sendTFTPBlock(block []byte) (err error) {
-	for transmissionCount := 1; transmissionCount <= r.retransmissions; transmissionCount++ {
-		if err = r.sendBufferWithRetransmissionOnTimeout(block, r.retransmissions); err != nil {
+	for transmissionCount := 1; transmissionCount <= r.config.Retransmissions; transmissionCount++ {
+		if err = r.sendBufferWithRetransmissionOnTimeout(block, r.config.Retransmissions); err != nil {
 			return
 		}
 
@@ -149,7 +149,7 @@ func (r *rrqResponse) sendTFTPBlock(block []byte) (err error) {
 			return
 		case Retransmit:
 			if transmissionCount >= 3 {
-				return fmt.Errorf("aborting transmission after %d retries", r.retransmissions)
+				return fmt.Errorf("aborting transmission after %d retries", r.config.Retransmissions)
 			}
 			r.logger.Debug("Retransmitting block",
 				zap.Int("Retransmission", transmissionCount))
@@ -277,9 +277,9 @@ func (r *rrqResponse) sendError(code ErrorCode, occurredError error) (err error)
 func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries int) error {
 	var err error
 	var numBytes int
-	
+
 	for try := 0; try < tries; try++ {
-		_ = r.connection.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		_ = r.connection.SetWriteDeadline(time.Now().Add(r.config.WriteTimeoutOrDefault()))
 		numBytes, err = r.connection.Write(buffer)
 		if err != nil {
 			return err
@@ -288,7 +288,7 @@ func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries
 		r.logger.Debug("Package sent",
 			zap.Int("Bytes", numBytes))
 
-		_ = r.connection.SetReadDeadline(time.Now().Add(5 * time.Second))
+		_ = r.connection.SetReadDeadline(time.Now().Add(r.config.ReadTimeoutOrDefault()))
 		numBytes, _, err = r.connection.ReadFromUDP(r.ack)
 		r.ackLength = numBytes
 		if err == nil {
@@ -308,13 +308,13 @@ func (r *rrqResponse) sendBufferWithRetransmissionOnTimeout(buffer []byte, tries
 func newRRQResponse(responseHandling ResponseHandling,
 	connection udp.Connection,
 	request *Request,
-	retransmissions int,
+	config Config,
 	logger logging.Logger) *rrqResponse {
 	return &rrqResponse{
 		logger:           logger,
 		responseHandling: responseHandling,
 		connection:       connection,
-		retransmissions:  retransmissions,
+		config:           config,
 		ack:              ackBufferPool.Get().([]byte),
 		request:          request,
 		blocknum:         1,

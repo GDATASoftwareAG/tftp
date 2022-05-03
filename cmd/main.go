@@ -97,6 +97,8 @@ func parseConfig() (cfg config, err error) {
 	viper.SetDefault("tftp.retransmissions", 3)
 	viper.SetDefault("tftp.maxparallelconnections", 10)
 	viper.SetDefault("tftp.filetransfertimeout", "0s")
+	viper.SetDefault("tftp.writetimeout", "5s")
+	viper.SetDefault("tftp.readtimeout", "5s")
 
 	viper.SetDefault("tftp.metrics.enabled", true)
 	viper.SetDefault("tftp.metrics.port", 9100)
