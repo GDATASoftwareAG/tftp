@@ -130,6 +130,9 @@ func (s *server) accept(listenSocket udp.Connection) (err error) {
 	s.logger.Info("Received request",
 		zap.Any("Addr", addr))
 
+	s.logger.Debug("Parse request",
+		zap.ByteString("bytes", requestBuffer[:written]))
+
 	var request *Request
 	request, err = parseRequest(requestBuffer[:written])
 	if err != nil {
