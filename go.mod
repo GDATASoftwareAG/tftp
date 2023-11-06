@@ -6,7 +6,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.4
 	github.com/golang/mock v1.6.0
 	github.com/prometheus/client_golang v1.17.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.26.0
