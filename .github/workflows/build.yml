@@ -14,11 +14,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Go
-      uses: actions/setup-go@v3
-      with:
-        go-version-file: 'go.mod'
+      uses: actions/setup-go@v4
     - name: Install Task
       run: go install github.com/go-task/task/v3/cmd/task@latest
     - name: Install mockgen
