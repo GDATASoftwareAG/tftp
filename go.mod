@@ -1,6 +1,6 @@
 module github.com/gdatasoftwareag/tftp/v2
 
-go 1.19
+go 1.21
 
 require (
 	github.com/cyphar/filepath-securejoin v0.2.4
