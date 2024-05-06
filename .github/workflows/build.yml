@@ -16,7 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Install Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
     - name: Install Task
       run: go install github.com/go-task/task/v3/cmd/task@latest
     - name: Install mockgen
