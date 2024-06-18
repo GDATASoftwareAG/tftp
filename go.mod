@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/cyphar/filepath-securejoin v0.2.5
 	github.com/golang/mock v1.6.0
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/multierr v1.11.0
