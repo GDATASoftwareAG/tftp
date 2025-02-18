@@ -3,7 +3,7 @@ module github.com/gdatasoftwareag/tftp/v2
 go 1.21
 
 require (
-	github.com/cyphar/filepath-securejoin v0.3.4
+	github.com/cyphar/filepath-securejoin v0.4.1
 	github.com/golang/mock v1.6.0
 	github.com/prometheus/client_golang v1.20.5
 	github.com/spf13/cobra v1.8.1
