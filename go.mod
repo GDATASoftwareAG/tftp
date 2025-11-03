@@ -5,7 +5,7 @@ go 1.21.0
 toolchain go1.24.1
 
 require (
-	github.com/cyphar/filepath-securejoin v0.4.1
+	github.com/cyphar/filepath-securejoin v0.6.0
 	github.com/golang/mock v1.6.0
 	github.com/prometheus/client_golang v1.21.1
 	github.com/spf13/cobra v1.9.1
